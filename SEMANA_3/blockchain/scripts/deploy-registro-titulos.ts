@@ -2,9 +2,9 @@ import { network } from "hardhat";
 
 const { viem } = await network.create();
 
-console.log("Desplegando contrato RegistroTitulos...");
+console.log("Desplegando contrato RegistroCertificados...");
 
-const registroTitulos = await viem.deployContract("RegistroTitulos");
+const registroCertificados = await viem.deployContract("RegistroCertificados");
 
 console.log("Contrato desplegado correctamente");
-console.log("Direccion del contrato:", registroTitulos.address);
+console.log("Direccion del contrato:", registroCertificados.address);

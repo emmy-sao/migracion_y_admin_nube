@@ -5,7 +5,7 @@ from pathlib import Path
 from web3 import Web3
 
 
-ABI_PATH = Path(__file__).parent / "contracts" / "RegistroTitulos.json"
+ABI_PATH = Path(__file__).parent / "contracts" / "RegistroCertificados.json"
 
 
 def get_web3() -> Web3:
@@ -49,14 +49,19 @@ def verify_contract_exists() -> bool:
     return code not in (b"", "0x")
 
 
-def register_title(codigo_titulo_hash: str, documento_hash: str) -> str:
+def register_certificate(codigo_certificado_hash: str, documento_hash: str) -> str:
     web3 = get_web3()
     contract = get_contract()
     private_key = get_private_key()
     account = web3.eth.account.from_key(private_key)
 
-    tx = contract.functions.registrarTitulo(
-        Web3.to_bytes(hexstr=codigo_titulo_hash),
+    # Verificar duplicado en blockchain antes de intentar
+    existe, _ = verify_certificate(codigo_certificado_hash, documento_hash)
+    if existe:
+        raise RuntimeError("El certificado ya existe en la blockchain")
+
+    tx = contract.functions.registrarCertificado(
+        Web3.to_bytes(hexstr=codigo_certificado_hash),
         Web3.to_bytes(hexstr=documento_hash),
     ).build_transaction(
         {
@@ -77,11 +82,10 @@ def register_title(codigo_titulo_hash: str, documento_hash: str) -> str:
 
     return Web3.to_hex(tx_hash)
 
-
-def verify_title(codigo_titulo_hash: str, documento_hash: str) -> tuple[bool, bool]:
+def verify_certificate(codigo_certificado_hash: str, documento_hash: str) -> tuple[bool, bool]:
     contract = get_contract()
-    existe, documento_coincide = contract.functions.verificarTitulo(
-        Web3.to_bytes(hexstr=codigo_titulo_hash),
+    existe, documento_coincide = contract.functions.verificarCertificado(
+        Web3.to_bytes(hexstr=codigo_certificado_hash),
         Web3.to_bytes(hexstr=documento_hash),
     ).call()
     return bool(existe), bool(documento_coincide)
